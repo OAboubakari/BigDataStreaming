@@ -31,13 +31,40 @@ object SparkBigData {
     // Enregistrer sur disk
     mon_rdd.repartition(1).saveAsObjectFile("C:\\Users\\PC\\Desktop\\mon test.txt") */
 
-    /** Creation d'un rdd à partir d'une source de données
+    //d'un rdd à partir d'une source de données
     val rdd2 = sc.textFile("C:\\Users\\PC\\Desktop\\Maîtrisez Spark pour le Big Data avec Scala\\sources\\test_rdd.txt")
-    println("Lecture du contenu de fichier text :")
-    rdd2.foreach(l=> println(l))
-    */
+    //println("Lecture du contenu de fichier text :")
+    //rdd2.foreach(l=> println(l))
 
-// Le lineage ou  (plan d'execution)
+    // Transformation des RDD
+
+    val rdd_trans : RDD[String] = sc.parallelize(List("alain mange une banane","la banane est un bon aliment pour la santé","achetez une bonne banane"))
+    //rdd_trans.foreach(l=>println("Ligne de mon rdd : " +l))
+    // Utilisation de la fction map
+    //val rdd_map = rdd_trans.map(a => a.split(" "))
+   // println("Nombre d'elements : "+rdd_map.count())
+
+    // Nombre de caractere
+
+    val rdd4 = rdd_trans.map( x => (x, x.length , x.contains("banane")))
+
+
+    val rdd5 = rdd4.map(x=> (x._1.toUpperCase() , x._3 , x._2))
+
+    val rdd6 = rdd5.map(x=>(x._1.split(" ") ,1))
+
+    //rdd6.foreach(o => println(o._1(0),o._2))
+    // Use of flatmap
+    //val rdd_flat = rdd_trans.flatMap(x=>(x.split(" "))).map(x => (x,1))
+    val rdd3 = rdd2.flatMap(x=> x.split(",")).map(m =>(m,1))
+    //val rdd_plat = rdd3.flatMap(x=> x.split( " "))
+    rdd3.repartition(1).saveAsTextFile("C:\\Users\\PC\\Desktop\\essai_flat_vers2.txt")
+      //rdd_plat.foreach(x => println(x))
+
+
+
+
+
 
 
 
