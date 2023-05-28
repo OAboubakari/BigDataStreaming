@@ -1,6 +1,9 @@
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql._
 import org.apache.spark.sql.functions._
+import org.apache.spark.sql.types.IntegerType
+import org.apache.spark.sql.DataFrame
+import org.apache.spark.sql.ColumnName
 
 
 
@@ -17,9 +20,62 @@ object SparkBigData {
         .option("header" ,"true")
         .csv("C:\\Users\\PC\\Desktop\\Maîtrisez Spark pour le Big Data avec Scala\\sources de données\\csvs\\2010-12-06.csv")
 
-    df_test.show(5)
-    val df_2 = df_test.select(col("InvoiceNo") , col("StockCode"), col("Quantity"), col("_c0").alias("Id du Client"), col("Description"))
-    df_2.show(5)
+    //df_test.show(5)
+    //val df_2 = df_test.select(col("InvoiceNo").alias("Numero de la Facture") , col("StockCode").cast(IntegerType), col("Quantity"), col("_c0").alias("Id du Client"), col("Description"))
+    //df_2.show(5)
+    val df3 = df_test.withColumnRenamed("_c0" , "Id_du_Client")
+        .withColumn("Total_amount" , round(col("UnitPrice")*col("Quantity") , scale = 2))
+        .withColumn("Created_date" , col = current_date())
+        .withColumn("Reduction" , when(col("Total_amount")> 15 , lit(3)).otherwise(when(col("Total_amount").between(15,20), lit(3)).otherwise(when(col("Total_amount") < 15, lit(2 )))))
+        .withColumn("Net Income" , round(col("Total_amount") - col("Reduction") , scale = 2))
+
+
+   // df3.show(20)
+  //  println("Le nombre de ligne est : " +df3.count())
+
+    // les clients qui n'ont pas reçu de reduction
+    //val df_not_reduced = df3.filter(col("Reduction")=== lit(0) && col("Country").isin("United Kingdom","France"))
+   // df_not_reduced.show(30)
+    //Jointures des dataframes
+    //Chargement de la table orders
+
+    val df_orders = session_s.read
+      .format("com.databricks.spark.csv")
+      .option("delimiter" , "\t")
+      .option("header" ,"true")
+      .load("C:\\Users\\PC\\Desktop\\Maîtrisez Spark pour le Big Data avec Scala\\sources de données\\orders.txt")
+
+    //df_orders.show(15)
+    // Table products
+
+    val df_products = session_s.read
+      .format("com.databricks.spark.csv")
+      .option("delimiter" , "\t")
+      .option("header" ,"true")
+      .load("C:\\Users\\PC\\Desktop\\Maîtrisez Spark pour le Big Data avec Scala\\sources de données\\product.txt")
+
+
+    val df_orderlines = session_s.read
+      .format("com.databricks.spark.csv")
+      .option("delimiter" , "\t")
+      .option("header" ,"true")
+      .load("C:\\Users\\PC\\Desktop\\Maîtrisez Spark pour le Big Data avec Scala\\sources de données\\orderline.txt")
+     println("=========================================")
+      println("Schema de la table orders")
+    println("=========================================")
+      df_orders.printSchema()
+    println("=========================================")
+    println("=========================================")
+    println("Schema de la table product")
+    println("=========================================")
+    df_products.printSchema()
+    println("=========================================")
+    println("=========================================")
+    println("Schema de la table orderline")
+    println("=========================================")
+    df_orderlines.printSchema()
+    println("=========================================")
+
 
     /* Charger plusieurs dataframes
     val df_group = session_s.read
