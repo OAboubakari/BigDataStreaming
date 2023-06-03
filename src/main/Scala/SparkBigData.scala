@@ -4,33 +4,49 @@ import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types.IntegerType
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.ColumnName
-
-
+import org.apache.spark.sql.catalyst.plans._
+import org.apache.spark.sql.types._
+import org.apache.hadoop.fs.{FileSystem , Path}
 
 
 object SparkBigData {
   var ss : SparkSession = null
+  /**val schema_indicateur = StructType(Array(
+    StructField("orderlineid",StringType,false),
+    StructField("shipdate",TimestampType,true),
+    StructField("productid",StringType,false),
+    StructField("billdate",TimestampType,false),
+    StructField("unitprice",StringType,false),
+    StructField("numunits",StringType,false),
+    StructField("totalprice",StringType,false)
+
+  )
+  )
+
+
+*/
 
   def main(args: Array[String]): Unit = {
     val session_s = Session_spark(true)
 
-    val df_test = session_s.read
-        .format("com.databricks.spark.csv")
-        .option("delimiter" , ",")
-        .option("header" ,"true")
-        .csv("C:\\Users\\PC\\Desktop\\Maîtrisez Spark pour le Big Data avec Scala\\sources de données\\csvs\\2010-12-06.csv")
+   // val df_test = session_s.read
+    //    .format("com.databricks.spark.csv")
+    //    .option("delimiter" , ",")
+     //   .option("header" ,"true")
+    //    .csv("C:\\Users\\PC\\Desktop\\Maîtrisez Spark pour le Big Data avec Scala\\sources de données\\csvs\\2010-12-06.csv")
 
-    //df_test.show(5)
+    /**df_test.show(5)
     //val df_2 = df_test.select(col("InvoiceNo").alias("Numero de la Facture") , col("StockCode").cast(IntegerType), col("Quantity"), col("_c0").alias("Id du Client"), col("Description"))
     //df_2.show(5)
-    val df3 = df_test.withColumnRenamed("_c0" , "Id_du_Client")
+   / val df3 = df_test.withColumnRenamed("_c0" , "Id_du_Client")
         .withColumn("Total_amount" , round(col("UnitPrice")*col("Quantity") , scale = 2))
         .withColumn("Created_date" , col = current_date())
         .withColumn("Reduction" , when(col("Total_amount")> 15 , lit(3)).otherwise(when(col("Total_amount").between(15,20), lit(3)).otherwise(when(col("Total_amount") < 15, lit(2 )))))
         .withColumn("Net Income" , round(col("Total_amount") - col("Reduction") , scale = 2))
+    */
 
 
-   // df3.show(20)
+    //df3.show(20)
   //  println("Le nombre de ligne est : " +df3.count())
 
     // les clients qui n'ont pas reçu de reduction
@@ -45,39 +61,30 @@ object SparkBigData {
       .option("header" ,"true")
       .load("C:\\Users\\PC\\Desktop\\Maîtrisez Spark pour le Big Data avec Scala\\sources de données\\orders.txt")
 
-    //df_orders.show(15)
+    val df_order_new = df_orders.withColumnRenamed("numunits" , "numunits_orders")
+      .withColumnRenamed("totalprice","totalprice_orders")
+
     // Table products
 
-    val df_products = session_s.read
+     val df_products = session_s.read
       .format("com.databricks.spark.csv")
       .option("delimiter" , "\t")
       .option("header" ,"true")
       .load("C:\\Users\\PC\\Desktop\\Maîtrisez Spark pour le Big Data avec Scala\\sources de données\\product.txt")
 
-
     val df_orderlines = session_s.read
       .format("com.databricks.spark.csv")
+      //.schema(schema_indicateur)
       .option("delimiter" , "\t")
       .option("header" ,"true")
       .load("C:\\Users\\PC\\Desktop\\Maîtrisez Spark pour le Big Data avec Scala\\sources de données\\orderline.txt")
-     println("=========================================")
-      println("Schema de la table orders")
-    println("=========================================")
-      df_orders.printSchema()
-    println("=========================================")
-    println("=========================================")
-    println("Schema de la table product")
-    println("=========================================")
-    df_products.printSchema()
-    println("=========================================")
-    println("=========================================")
-    println("Schema de la table orderline")
-    println("=========================================")
-    df_orderlines.printSchema()
-    println("=========================================")
 
 
-    /* Charger plusieurs dataframes
+   // df_orderlines.printSchema()
+   // df_orders.printSchema()
+   // df_products.show(2)
+
+    /*Charger plusieurs dataframes
     val df_group = session_s.read
       .format("csv")
       .option("inferSchema" , ",")
@@ -90,6 +97,96 @@ object SparkBigData {
 
 
    // println("df_test_count : "+df_test.count() +"df_group :"+df_group.count() )
+
+    // Les jointures
+    df_orderlines.join(df_order_new , df_order_new.col("orderid") === df_orderlines.col("orderid") , joinType = "Inner").show(5)
+    df_orderlines.join(df_order_new , df_orders.col("orderid") === df_orderlines.col("orderid") , joinType = "fullouter").show(5)
+   // Union des dataframes
+    val df_joinOrders = df_orderlines.join(df_order_new , df_orders.col("orderid") === df_orderlines.col("orderid"), joinType = "inner")
+      .join(df_products,df_products.col("productid")=== df_orderlines.col("productid"), Inner.sql)
+ // Le group by
+    //df_joinOrders.withColumn("Total_amount" , round(col("numunits")*col("totalprice") , scale = 2)).groupBy("city" , "state").sum("Total_amount").as("Commande Total par Etat").show(25)
+
+    //Operations sur les Structypes Ok
+    //La persistance sur disque , Hdfs
+    df_order_new.repartition(numPartitions = 1)
+      .write.mode(SaveMode.Overwrite)
+      .option("header" , "true")
+      .csv("C:\\Users\\PC\\Desktop\\Maîtrisez Spark pour le Big Data avec Scala\\ecriture2")
+
+   // df_orderlines.printSchema()
+
+    def spark_hdfs () : Unit = {
+      /**
+       * Fonction de manipulation des fichiers
+       */
+
+      val config_fs = Session_spark(true).sparkContext.hadoopConfiguration
+      val fs = FileSystem.get(config_fs)
+      //Creation des path source et destination
+      val src_file = new Path("/user/datalake/marketing")
+      val dest_file = new Path("/user/datalake/indexes")
+      val local_file = new Path("C:\\Users\\PC\\Desktop\\Maîtrisez Spark pour le Big Data avec Scala\\ecriture2\\part.csv")
+      val local_file2 = new Path("C:\\Users\\PC\\Desktop\\Maîtrisez Spark pour le Big Data avec Scala")
+
+      //Lecture des fichiers
+      //Methode 1
+      val file_list = fs.listStatus(src_file)
+      file_list.foreach(f => println(f.getPath))
+      //Methode 2
+      val file_list1 = fs.listStatus(src_file).map(f => f.getPath)
+      for (i<- 1 to file_list1.length)
+        {
+          println(file_list1(i))
+        }
+      // renommer des fichiers
+      fs.rename(src_file , dest_file)
+      // suppimer des fichiers
+
+      fs.delete( src_file , true)
+      // copy de fichiers
+
+      fs.copyFromLocalFile(local_file , src_file)
+      fs.copyToLocalFile(src_file, local_file2)
+
+
+
+
+    }
+
+
+
+
+
+
+
+    /**
+   val df_fichier_1 = session_s.read
+     .format("com.databricks.spark.csv")
+     .option("delimiter" , ",")
+     .option("header" ,"true")
+     .csv("C:\\Users\\PC\\Desktop\\Maîtrisez Spark pour le Big Data avec Scala\\sources de données\\csvs\\2010-12-06.csv")
+
+    val df_fichier_2 = session_s.read
+      .format("com.databricks.spark.csv")
+      .option("delimiter" , ",")
+      .option("header" ,"true")
+      .csv("C:\\Users\\PC\\Desktop\\Maîtrisez Spark pour le Big Data avec Scala\\sources de données\\csvs\\2011-01-20.csv")
+
+    val df_fichier_3 = session_s.read
+      .format("com.databricks.spark.csv")
+      .option("delimiter" , ",")
+      .option("header" ,"true")
+      .csv("C:\\Users\\PC\\Desktop\\Maîtrisez Spark pour le Big Data avec Scala\\sources de données\\csvs\\2011-12-08.csv")
+
+
+    val df_united_files = df_fichier_1.union(df_fichier_2.union(df_fichier_3))
+
+    //println(df_fichier_3.count() +" "+ df_fichier_1.count()+" "+ df_fichier_2.count()+" "+ df_united_files.count())*/
+
+
+
+
 
   }
 
@@ -187,7 +284,7 @@ object SparkBigData {
             .config("spark.serializer" ,"org.apache.spark.serializer.KryoSerializer")
             .config("spark.sql.CrossJoin.enabled" , "true")
             .getOrCreate()
-//           .enableHiveSupport()
+//          .enableHiveSupport()
 
       }
     else
