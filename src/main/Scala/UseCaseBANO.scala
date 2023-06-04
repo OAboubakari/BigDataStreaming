@@ -44,7 +44,26 @@ object UseCaseBANO {
 
     df_bano.show(25)
 
+    /** Taf :
+     * 1-creer une colonne codedepartement à partir des 2 premiers chiffres de code postal
+     * 2 - Creer des correspondance pour le code_source_bno
+     *  OSM : pour OpenStreetMap
+     *  OO : pour OpenData
+     *  O+O : OpenData_OSM
+     *  CAD : pour le Cadastre
+     *  C+O : Cadastre OpenStreetMap
+     */
+    // Creation d'une nouvelle variable df
 
+    val df : DataFrame = df_bano.withColumn("code_department", substring(col("code_postal"), 1, 2))
+      .withColumn("Libelle_source" , when(col("code_source_bano") === lit("OSM"),lit("OpenStreetMap"))
+        .otherwise(when(col("code_source_bano") === lit("OO"),lit("OpenData"))
+          .otherwise(when(col("code_source_bano") === lit("O+O"),lit("OpenData_OSM"))
+            .otherwise(when(col("code_source_bano") === lit("CAD"),lit("Cadastre"))
+              .otherwise(when(col("code_source_bano") === lit("C+O"),lit("Cadastre_OSM")))))))
+
+
+    df.show(100)
 
 
   }
