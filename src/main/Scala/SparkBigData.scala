@@ -23,7 +23,6 @@ object SparkBigData {
   )
   )
 
-
 */
 
   def main(args: Array[String]): Unit = {
@@ -99,8 +98,8 @@ object SparkBigData {
    // println("df_test_count : "+df_test.count() +"df_group :"+df_group.count() )
 
     // Les jointures
-    df_orderlines.join(df_order_new , df_order_new.col("orderid") === df_orderlines.col("orderid") , joinType = "Inner").show(5)
-    df_orderlines.join(df_order_new , df_orders.col("orderid") === df_orderlines.col("orderid") , joinType = "fullouter").show(5)
+    df_orderlines.join(df_order_new , df_order_new.col("orderid") === df_orderlines.col("orderid") , joinType = "Inner")
+    df_orderlines.join(df_order_new , df_orders.col("orderid") === df_orderlines.col("orderid") , joinType = "fullouter")
    // Union des dataframes
     val df_joinOrders = df_orderlines.join(df_order_new , df_orders.col("orderid") === df_orderlines.col("orderid"), joinType = "inner")
       .join(df_products,df_products.col("productid")=== df_orderlines.col("productid"), Inner.sql)
@@ -114,9 +113,23 @@ object SparkBigData {
       .option("header" , "true")
       .csv("C:\\Users\\PC\\Desktop\\Maîtrisez Spark pour le Big Data avec Scala\\ecriture2")
 
-   // df_orderlines.printSchema()
 
-    def spark_hdfs () : Unit = {
+
+    //Manipulation des dates et du temps
+    df_order_new.withColumn("Date de lecture" ,  date_format(current_date(), format = "dd/MM/yyyy"))
+      .withColumn("Date de lecture complete", date_format(current_timestamp() , format = "dd/MM/yyyy-hh-mm-ss"))
+    //df_order_new.show(5)
+    //Calcul de periodes par secondes
+    df_order_new.withColumn("Date de lecture" ,  date_format(current_date(), format = "dd/MM/yyyy"))
+      .withColumn("Date de lecture complete", date_format(current_timestamp() , format = "dd/MM/yyyy-hh-mm-ss"))
+      .withColumn("Periode_par_secondes" , window(col("orderdate") , windowDuration = "10 seconds"))
+      .select(
+        col("Periode_par_secondes"),
+        col("Periode_par_secondes.start"),
+        col("Periode_par_secondes.end")
+      )
+
+    /**def spark_hdfs () : Unit = {
       /**
        * Fonction de manipulation des fichiers
        */
@@ -152,7 +165,7 @@ object SparkBigData {
 
 
 
-    }
+    } */
 
 
 
@@ -160,7 +173,6 @@ object SparkBigData {
 
 
 
-    /**
    val df_fichier_1 = session_s.read
      .format("com.databricks.spark.csv")
      .option("delimiter" , ",")
@@ -183,7 +195,10 @@ object SparkBigData {
     val df_united_files = df_fichier_1.union(df_fichier_2.union(df_fichier_3))
 
     //println(df_fichier_3.count() +" "+ df_fichier_1.count()+" "+ df_fichier_2.count()+" "+ df_united_files.count())*/
-
+  //df_united_files.printSchema()
+   // Conversion de type de colonne en type date
+    df_united_files.withColumn("InvoiceDate" , to_date(col("InvoiceDate")))
+                 .withColumn("InvoiceTimestamp" , to_date(col("InvoiceTimestamp"))).printSchema()
 
 
 
