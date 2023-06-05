@@ -22,6 +22,8 @@ object UseCaseBANO {
 // Configuration Hadoop file system
    val configHadoop = new Configuration()
    val fs = FileSystem.get(configHadoop)
+  // le chemin qui recevra les fichiers traités
+  val chemin_destination = new Path("C:\\destination_fichier_bano")
 
   def main(args: Array[String]): Unit = {
 
@@ -42,7 +44,7 @@ object UseCaseBANO {
    .withColumnRenamed("_c6","latitude")
    .withColumnRenamed("_c7","longitude")
 
-    df_bano.show(25)
+    //Etape 2
 
     /** Taf :
      * 1-creer une colonne codedepartement à partir des 2 premiers chiffres de code postal
@@ -55,7 +57,8 @@ object UseCaseBANO {
      */
     // Creation d'une nouvelle variable df
 
-    val df : DataFrame = df_bano.withColumn("code_department", substring(col("code_postal"), 1, 2))
+    val df : DataFrame = df_bano
+      .withColumn("code_department", substring(col("code_postal"), 1, 2))
       .withColumn("Libelle_source" , when(col("code_source_bano") === lit("OSM"),lit("OpenStreetMap"))
         .otherwise(when(col("code_source_bano") === lit("OO"),lit("OpenData"))
           .otherwise(when(col("code_source_bano") === lit("O+O"),lit("OpenData_OSM"))
@@ -63,9 +66,74 @@ object UseCaseBANO {
               .otherwise(when(col("code_source_bano") === lit("C+O"),lit("Cadastre_OSM")))))))
 
 
-    df.show(100)
 
 
-  }
+    // Etape 2 : Creation d'un fichier BANO par Departement
+    // La liste des departements
+    //J'utilise collect() car ici c'est un dataframe(qui est partitionné et reparti entre les noeux du cluster or les list ne le sont pas)
+
+
+    val df_departements = df.select(col("code_department")).distinct().filter(col("code_department").isNotNull)
+
+    //df.show(5)
+
+    //Methode 1(Version scala classique)
+    val liste_departement = df.select(col("code_department"))
+      .distinct()
+      .filter(col("code_department").isNotNull)
+      .collect()
+      .map(lst => lst(0)).toList
+
+    //Creation des fichier par departement
+
+    liste_departement.foreach{
+       x => df.filter(col("code_department")=== x.toString)
+           .coalesce(1) //Executer le calcul sur le noeud principal du cluster avec un seul fichier
+           .write
+           .format("com.databricks.spark.com")
+           .option("delimiter" , ";")
+           .option("header", "true")
+           .mode(SaveMode.Overwrite)
+           .csv("C:\\Users\\PC\\Desktop\\Maîtrisez Spark pour le Big Data avec Scala\\Projet BANO\\Bano_resultat\\departement_Numero " + x.toString)
+
+         val chemin_source = new Path("C:\\Users\\PC\\Desktop\\Maîtrisez Spark pour le Big Data avec Scala\\Projet BANO\\Bano_resultat\\departement_Numero " + x.toString)
+
+        //deplacement des fichiers vers la destination
+        fs.copyFromLocalFile(chemin_source,chemin_destination)
+
+
+
+    }
+
+    /**
+    //Methode 2 : On passe par le dataframe df_departement(Version distribuée)
+
+    df_departements.foreach{
+      dep => df.filter(col("code_department")=== dep.toString)
+        .repartition(1)
+        .write
+        .format("com.databricks.spark.com")
+        .option("delimiter" , ";")
+        .option("header", "true")
+        .mode(SaveMode.Overwrite)
+        .csv("C:\\Users\\PC\\Desktop\\Maîtrisez Spark pour le Big Data avec Scala\\Projet BANO\\Bano_resultat\\departement_Numero " + dep.toString)
+
+        //deplacement des fichiers vers la destination
+
+        val chemin_source = new Path("C:\\Users\\PC\\Desktop\\Maîtrisez Spark pour le Big Data avec Scala\\Projet BANO\\Bano_resultat\\departement_Numero" +dep.toString)
+
+      fs.copyFromLocalFile(chemin_source,chemin_destination)
+     */
+
+
+    }
+
+
+
+
+
+
+
+
 
 }
