@@ -105,7 +105,7 @@ object UseCaseBANO {
 
     }
 
-    /**
+
     //Methode 2 : On passe par le dataframe df_departement(Version distribuée)
 
     df_departements.foreach{
@@ -123,7 +123,7 @@ object UseCaseBANO {
         val chemin_source = new Path("C:\\Users\\PC\\Desktop\\Maîtrisez Spark pour le Big Data avec Scala\\Projet BANO\\Bano_resultat\\departement_Numero" +dep.toString)
 
       fs.copyFromLocalFile(chemin_source,chemin_destination)
-     */
+
 
 
     }
