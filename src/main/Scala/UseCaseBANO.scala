@@ -20,6 +20,7 @@ object UseCaseBANO {
   )
   )
 // Configuration Hadoop file system
+
    val configHadoop = new Configuration()
    val fs = FileSystem.get(configHadoop)
   // le chemin qui recevra les fichiers traités
@@ -99,13 +100,14 @@ object UseCaseBANO {
          val chemin_source = new Path("C:\\Users\\PC\\Desktop\\Maîtrisez Spark pour le Big Data avec Scala\\Projet BANO\\Bano_resultat\\departement_Numero " + x.toString)
 
         //deplacement des fichiers vers la destination
+
         fs.copyFromLocalFile(chemin_source,chemin_destination)
 
 
 
     }
 
-
+/**
     //Methode 2 : On passe par le dataframe df_departement(Version distribuée)
 
     df_departements.foreach{
@@ -122,7 +124,7 @@ object UseCaseBANO {
 
         val chemin_source = new Path("C:\\Users\\PC\\Desktop\\Maîtrisez Spark pour le Big Data avec Scala\\Projet BANO\\Bano_resultat\\departement_Numero" +dep.toString)
 
-      fs.copyFromLocalFile(chemin_source,chemin_destination)
+      fs.copyFromLocalFile(chemin_source,chemin_destination) */
 
 
 

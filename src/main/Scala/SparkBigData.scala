@@ -7,7 +7,7 @@ import org.apache.spark.sql.ColumnName
 import org.apache.spark.sql.catalyst.plans._
 import org.apache.spark.sql.types._
 import org.apache.hadoop.fs.{FileSystem , Path}
-
+import org.apache.spark.sql.catalyst.plans
 
 object SparkBigData {
   var ss : SparkSession = null
@@ -128,6 +128,11 @@ object SparkBigData {
         col("Periode_par_secondes.start"),
         col("Periode_par_secondes.end")
       )
+    // Intro spark et sql : les vues temporaires
+
+    //df_products.createOrReplaceGlobalTempView("products")
+    // session_s.sql("select * from products limit 15").show(15)
+
 
     /**def spark_hdfs () : Unit = {
       /**
@@ -298,8 +303,9 @@ object SparkBigData {
             .master("local[*]")
             .config("spark.serializer" ,"org.apache.spark.serializer.KryoSerializer")
             .config("spark.sql.CrossJoin.enabled" , "true")
+            //.enableHiveSupport()
             .getOrCreate()
-//          .enableHiveSupport()
+
 
       }
     else
