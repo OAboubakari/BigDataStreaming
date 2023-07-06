@@ -32,6 +32,10 @@ object Spark_Hbase {
 
   def main(args: Array[String]): Unit = {
 
+    val ss = Session_spark(true)
+
+
+
 
 
     
