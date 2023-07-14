@@ -10,6 +10,19 @@ object Spark_Cassandra {
 
   def main(args: Array[String]): Unit = {
     ss = Session_spark(true)
+// creation du catalog cassandra
+
+
+
+
+
+
+
+
+
+
+
+
 
   }
 }
