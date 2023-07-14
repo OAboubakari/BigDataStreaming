@@ -17,10 +17,22 @@ object Spark_Cassandra {
     ss.conf.set(s"spark.sql.catalog.sp_cassandra","com.datastax.spark.connector.datasource.CassandraCatalog")
     ss.conf.set(s"spark.sql.catalog.sp_cassandra.spark.cassandra.connection.host", "127.0.0.1")
 
+// Chargement de la keyspace demo
+
+   /** val df_cassandra = ss.read
+      .format("com.datastax.spark.connector")
+      .options(Map("keyspace" -> "demo","table"->"spacecraft_journey_catalog" , "cluster"->"journey_id"))
+      .load()
+    */
+
+    val df_cassandra = ss.read
+        .cassandraFormat(table="spacecraft_journey_catalog" , keyspace = "demo" , cluster ="journey_id" )
+        .load()
 
 
-
-
+    df_cassandra.printSchema()
+    df_cassandra.describe()
+    df_cassandra.show()
 
 
 
