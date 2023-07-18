@@ -32,7 +32,7 @@ object Spark_Cassandra {
 
     df_cassandra.printSchema()
     df_cassandra.describe()
-    df_cassandra.show()
+    df_cassandra.show(25)
 
 
 

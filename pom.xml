@@ -12,7 +12,8 @@
     <properties>
 
         <cassandra.spark.connector.version>2.4.2</cassandra.spark.connector.version>
-
+        <elasticsearch.spark.version>8.8.2</elasticsearch.spark.version>
+        <common.clienthttp.version>3.1</common.clienthttp.version>
 
     </properties>
 
@@ -113,6 +114,20 @@
         <artifactId>spark-cassandra-connector_2.12</artifactId>
         <version>${cassandra.spark.connector.version}</version>
     </dependency>
+    <!-- https://mvnrepository.com/artifact/org.elasticsearch/elasticsearch-spark-20 -->
+    <dependency>
+        <groupId>org.elasticsearch</groupId>
+        <artifactId>elasticsearch-spark-20_2.12</artifactId>
+        <version>${elasticsearch.spark.version}</version>
+    </dependency>
+    <!-- https://mvnrepository.com/artifact/commons-httpclient/commons-httpclient -->
+    <dependency>
+        <groupId>commons-httpclient</groupId>
+        <artifactId>commons-httpclient</artifactId>
+        <version>${common.clienthttp.version}</version>
+    </dependency>
+
+
 
 
 </dependencies>
