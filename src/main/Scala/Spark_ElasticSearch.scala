@@ -18,7 +18,23 @@ object Spark_ElasticSearch {
       .load("C:\\Users\\PC\\Desktop\\Maîtrisez Spark pour le Big Data avec Scala\\sources de données\\orders.csv")
 
 
-    df_index.show(15)
+    //df_index.show(15)
+
+    //Définition des paramètres de connexion avec le cluster Elastic search et ecriture dans elasticsearch
+
+    df_index.write
+      .mode("append")
+      .format("org.elasticsearch.spark.sql")
+      .option("es.port",9200)
+      .option("es.nodes" , "localhost")
+      .option("user","elastic")
+      .option("password","cWNfEZr8N0u6SHoGS4Ls")
+      .save("index/doc")
+
+
+
+
+
 
   }
 
