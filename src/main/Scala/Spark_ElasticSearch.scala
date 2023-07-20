@@ -3,7 +3,7 @@ import org.apache.spark.sql.types
 import org.apache.spark.sql.functions._
 import SparkBigData._
 import org.elasticsearch.spark.sql._
-
+import java.util._
 
 
 object Spark_ElasticSearch {
@@ -23,13 +23,14 @@ object Spark_ElasticSearch {
     //Définition des paramètres de connexion avec le cluster Elastic search et ecriture dans elasticsearch
 
     df_index.write
-      .mode("append")
+      .mode(SaveMode.Overwrite)
       .format("org.elasticsearch.spark.sql")
-      .option("es.port",9200)
-      .option("es.nodes" , "localhost")
-      .option("user","elastic")
-      .option("password","cWNfEZr8N0u6SHoGS4Ls")
-      .save("index/doc")
+      .option("es.port","9200")
+      .option("es.nodes" , "localhost:9200")
+      .option("es.net.http.auth.user","elastic")
+      .option("es.nodes.client.transport.sniff","true")
+      .option("es.net.http.auth.pass","cWNfEZr8N0u6SHoGS4Ls")
+      .save("index_oa/doc")
 
 
 
