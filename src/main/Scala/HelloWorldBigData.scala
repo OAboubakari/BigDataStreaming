@@ -33,4 +33,19 @@ object HelloWorldBigData {
     "KY" -> "Kentucky")
 
     states.foreach(l => println(l))
+
+
+  def division(numerateur : Int , denominateur : Int): Int =  {
+    var resultat = numerateur/denominateur
+    return resultat
+  }
+
+
+
+
+
+
+
+
+
 }

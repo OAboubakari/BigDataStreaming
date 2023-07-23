@@ -14,6 +14,10 @@
         <cassandra.spark.connector.version>2.4.2</cassandra.spark.connector.version>
         <elasticsearch.spark.version>8.8.2</elasticsearch.spark.version>
         <common.clienthttp.version>3.1</common.clienthttp.version>
+        <apache.log4j.version>2.17.2</apache.log4j.version>
+        <apache.log4j.api.version>2.17.2</apache.log4j.api.version>
+        <test.junit.version>4.12</test.junit.version>
+        <scala.test.version>3.2.9</scala.test.version>
 
     </properties>
 
@@ -126,6 +130,35 @@
         <artifactId>commons-httpclient</artifactId>
         <version>${common.clienthttp.version}</version>
     </dependency>
+    <!-- https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-core -->
+    <dependency>
+        <groupId>org.apache.logging.log4j</groupId>
+        <artifactId>log4j-core</artifactId>
+        <version>${apache.log4j.version}</version>
+    </dependency>
+    <!-- https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-api -->
+    <dependency>
+        <groupId>org.apache.logging.log4j</groupId>
+        <artifactId>log4j-api</artifactId>
+        <version>${apache.log4j.api.version}</version>
+    </dependency>
+    <!-- https://mvnrepository.com/artifact/junit/junit -->
+    <dependency>
+        <groupId>junit</groupId>
+        <artifactId>junit</artifactId>
+        <version>${test.junit.version}</version>
+        <scope>test</scope>
+    </dependency>
+    <!-- https://mvnrepository.com/artifact/org.scalatest/scalatest -->
+    <dependency>
+        <groupId>org.scalatest</groupId>
+        <artifactId>scalatest_3</artifactId>
+        <version>${scala.test.version}</version>
+        <scope>test</scope>
+    </dependency>
+
+
+
 
 
 

@@ -5,12 +5,16 @@ import SparkBigData._
 import org.apache.spark.sql.cassandra._
 import com.datastax.spark.connector._
 import com.datastax.spark.connector.cql.CassandraConnector
+import org.apache.log4j.{LogManager, Logger}
 import org.apache.spark.sql.cassandra._
 
 object Spark_Cassandra {
 
 
+
   def main(args: Array[String]): Unit = {
+
+
     ss = Session_spark(true)
 // creation du catalog cassandra
 

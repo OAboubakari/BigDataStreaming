@@ -6,10 +6,13 @@ import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.ColumnName
 import org.apache.spark.sql.catalyst.plans._
 import org.apache.spark.sql.types._
-import org.apache.hadoop.fs.{FileSystem , Path}
+import org.apache.hadoop.fs.{FileSystem, Path}
+import org.apache.log4j.{BasicConfigurator, LogManager, Logger}
 import org.apache.spark.sql.catalyst.plans
 
 object SparkBigData {
+  BasicConfigurator.configure()
+  private var trace_appli: Logger = LogManager.getLogger("Logger_Console")
   var ss : SparkSession = null
   /**val schema_indicateur = StructType(Array(
     StructField("orderlineid",StringType,false),
@@ -26,6 +29,9 @@ object SparkBigData {
 */
 
   def main(args: Array[String]): Unit = {
+
+    trace_appli.info("Demarrage du traçage de notre appli")
+    trace_appli.info("Creation de la sesion spark")
     val session_s = Session_spark(true)
 
    // val df_test = session_s.read
@@ -53,7 +59,7 @@ object SparkBigData {
    // df_not_reduced.show(30)
     //Jointures des dataframes
     //Chargement de la table orders
-
+    trace_appli.info("Chargement du fichier orders")
     val df_orders = session_s.read
       .format("com.databricks.spark.csv")
       .option("delimiter" , "\t")
@@ -62,6 +68,7 @@ object SparkBigData {
 
     val df_order_new = df_orders.withColumnRenamed("numunits" , "numunits_orders")
       .withColumnRenamed("totalprice","totalprice_orders")
+    trace_appli.info("Renommage de la colonne numunits en numunits_orders")
 
     // Table products
 
@@ -70,13 +77,16 @@ object SparkBigData {
       .option("delimiter" , "\t")
       .option("header" ,"true")
       .load("C:\\Users\\PC\\Desktop\\Maîtrisez Spark pour le Big Data avec Scala\\sources de données\\product.txt")
-
+    trace_appli.info("Chargement du csv products")
+    trace_appli.info("Affichage des produits")
+    df_products.show(15)
     val df_orderlines = session_s.read
       .format("com.databricks.spark.csv")
       //.schema(schema_indicateur)
       .option("delimiter" , "\t")
       .option("header" ,"true")
       .load("C:\\Users\\PC\\Desktop\\Maîtrisez Spark pour le Big Data avec Scala\\sources de données\\orderline.txt")
+    trace_appli.info("Chargement de orderines")
 
 
    // df_orderlines.printSchema()
@@ -96,7 +106,7 @@ object SparkBigData {
 
 
    // println("df_test_count : "+df_test.count() +"df_group :"+df_group.count() )
-
+    trace_appli.info("Debut des jointures")
     // Les jointures
     df_orderlines.join(df_order_new , df_order_new.col("orderid") === df_orderlines.col("orderid") , joinType = "Inner")
     df_orderlines.join(df_order_new , df_orders.col("orderid") === df_orderlines.col("orderid") , joinType = "fullouter")
@@ -105,7 +115,7 @@ object SparkBigData {
       .join(df_products,df_products.col("productid")=== df_orderlines.col("productid"), Inner.sql)
  // Le group by
     //df_joinOrders.withColumn("Total_amount" , round(col("numunits")*col("totalprice") , scale = 2)).groupBy("city" , "state").sum("Total_amount").as("Commande Total par Etat").show(25)
-
+    trace_appli.info("La persistance sur disque , Hdfs")
     //Operations sur les Structypes Ok
     //La persistance sur disque , Hdfs
     df_order_new.repartition(numPartitions = 1)
