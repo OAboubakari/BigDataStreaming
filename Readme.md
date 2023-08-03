@@ -8,8 +8,9 @@ Il regorge plusieurs projet à savoir :
 * Le projet Bano (Segmentation des fichiers de la Base Nationale ouverte de la France par departement)
 * La connection et l'interrogation des bases de données SQL et NosqL(Cassandra,Hbase,..)
 * L'indexation et la visualisation de contenu avec elasticSearch et Kibana
-* Deployement et monitoring d'applications Apache Spark
+* Deploiement et monitoring d'applications Apache Spark
 * Les tests unitaires avec Scala
+* Monitorer l'application deployée en production
 
 
 
