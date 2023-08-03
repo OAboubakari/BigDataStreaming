@@ -10,7 +10,7 @@ Il regorge plusieurs projet à savoir :
 * L'indexation et la visualisation de contenu avec elasticSearch et Kibana
 * Deploiement et monitoring d'applications Apache Spark
 * Les tests unitaires avec Scala
-* Monitorer l'application deployée en production
+* Monitorer l'application Apache Spark deployée en production
 
 
 
